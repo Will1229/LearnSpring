@@ -107,4 +107,50 @@ public final void refresh() throws ApplicationContextException {
 
 ```
 
+We go through all the methods one by one.
 
+##### refreshBeanFactory()
+
+```java
+protected void refreshBeanFactory() throws ApplicationContextException {
+	String identifier = "application context with display name [" + getDisplayName() + "]";
+	InputStream is = null;
+	try {
+		// Supports remote as well as local URLs
+		is = getInputStreamForBeanFactory();
+		this.xmlBeanFactory = new XmlBeanFactory(getParent());
+		this.xmlBeanFactory.setEntityResolver(new ResourceBaseEntityResolver(this));
+		this.xmlBeanFactory.loadBeanDefinitions(is);
+
+```
+
+The method gets the configuration file applicationContext.xml as an InputStream. And then it instantiates bean factory and entity resolver. In the end it loads bean definitions.
+
+##### XmlBeanFactory.loadBeanDefinitions()
+
+```java
+DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+logger.debug("Using JAXP implementation [" + factory + "]");
+factory.setValidating(true);
+DocumentBuilder db = factory.newDocumentBuilder();
+db.setErrorHandler(new BeansErrorHandler());
+db.setEntityResolver(this.entityResolver != null ? this.entityResolver : new BeansDtdResolver());
+Document doc = db.parse(is);
+loadBeanDefinitions(doc);
+```
+
+This method first initializes XML DOM parser and unmarshalls the xml to DOM document. Then loads it.
+
+##### XmlBeanFactory.loadBeanDefinitions()
+public void loadBeanDefinitions(Document doc) throws BeansException {
+	Element root = doc.getDocumentElement();
+	logger.debug("Loading bean definitions");
+	NodeList nl = root.getElementsByTagName(BEAN_ELEMENT);
+	logger.debug("Found " + nl.getLength() + " <" + BEAN_ELEMENT + "> elements defining beans");
+	for (int i = 0; i < nl.getLength(); i++) {
+		Node n = nl.item(i);
+		loadBeanDefinition((Element) n);
+	}
+}
+
+This method traversals the whole xml and finds all elements with tag "bean". Then loads them one by one.
