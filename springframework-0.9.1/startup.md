@@ -109,7 +109,7 @@ public final void refresh() throws ApplicationContextException {
 
 We go through all the methods one by one.
 
-##### refreshBeanFactory()
+##### AbstractApplicationContext.refreshBeanFactory()
 
 ```java
 protected void refreshBeanFactory() throws ApplicationContextException {
@@ -126,7 +126,7 @@ protected void refreshBeanFactory() throws ApplicationContextException {
 
 The method gets the configuration file applicationContext.xml as an InputStream. And then it instantiates bean factory and entity resolver. In the end it loads bean definitions.
 
-##### XmlBeanFactory.loadBeanDefinitions()
+##### XmlBeanFactory.loadBeanDefinitions(InputStream is)
 
 ```java
 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -141,7 +141,8 @@ loadBeanDefinitions(doc);
 
 This method first initializes XML DOM parser and unmarshalls the xml to DOM document. Then loads it.
 
-##### XmlBeanFactory.loadBeanDefinitions()
+##### XmlBeanFactory.loadBeanDefinitions(Document doc)
+```java
 public void loadBeanDefinitions(Document doc) throws BeansException {
 	Element root = doc.getDocumentElement();
 	logger.debug("Loading bean definitions");
@@ -152,5 +153,27 @@ public void loadBeanDefinitions(Document doc) throws BeansException {
 		loadBeanDefinition((Element) n);
 	}
 }
+```
 
 This method traversals the whole xml and finds all elements with tag "bean". Then loads them one by one.
+
+##### XmlBeanFactory.loadBeanDefinitions(Element el)
+```java
+	AbstractBeanDefinition beanDefinition;
+
+	PropertyValues pvs = getPropertyValueSubElements(el);
+	beanDefinition = parseBeanDefinition(el, id, pvs);
+	registerBeanDefinition(id, beanDefinition);
+```
+
+This method parse out bean difinition and register it into beanDefinitionMap. All the important bean attributes like "singleton", "init-method", etc. are parsed and saved. The actual class of the bean is wrapped in AbstractBeanDefinition.
+
+##### AbstractApplicationContext.invokeContextConfigurers()
+This method will modify application context's internal bean factory after initialization to override properties. No bean is instantiated yet.
+
+After this the AbstractApplicationContext will loal a couple of special purpose beans: options bean, messageSource bean, context specific bean and listener beans. The beans which implement interface ApplicationListener are considerred as listener beans.
+
+
+
+
+
