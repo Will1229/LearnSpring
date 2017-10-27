@@ -173,7 +173,12 @@ This method will modify application context's internal bean factory after initia
 
 After this the AbstractApplicationContext will loal a couple of special purpose beans: options bean, messageSource bean, context specific bean and listener beans. The beans which implement interface ApplicationListener are considerred as listener beans.
 
+Singleton beans will be instantiated lazily afterwards. This is done by calling the getBeanInternal method in AbstractBeanFactory.
 
+A ContextRefreshedEvent event will be published to all listener beans as the last step. refresh() is done.
 
+#### XmlWebApplicationContext.setServletContext(ServletContext servletContext)
+Back to XmlWebApplicationContext. After finishing refresh(), it will initialize all needed config beans and pulish them as ServletContext attributes.
 
+The ApplicationContext now is initialized.
 
